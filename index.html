@@ -1,0 +1,527 @@
+<!doctype html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Op weg naar Gent</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Gent 42">
+<style>html,body{margin:0}:root{padding-top:env(safe-area-inset-top,0px)}img{max-width:100%}</style>
+<meta name="theme-color" content="#0F1420">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700;800&family=Figtree:wght@400;500;600;700;800&display=swap">
+<style>
+/* Mobile-first app shell (max 480px): screens Vandaag / Plan / Fitness / Stats with a fixed bottom tab bar.
+   Single deliberate dark theme, zone colours carry meaning (rustig, marathontempo, threshold, interval). */
+:root{
+  --bg:#0F1420; --card:#182033; --card2:#202A42; --ink:#F3F5FA; --muted:#8F9AB2; --line:#2A3552;
+  --primary:#FF6B4A; --ok:#3FC98A;
+  --zR:#5E6985; --zE:#3FC98A; --zMP:#5B8CFF; --zT:#FFA63D; --zI:#FF4F7B; --bike:#2EC4C4; --gym:#A47CFF;
+  --display:"Barlow Condensed","Arial Narrow",system-ui,sans-serif;
+  --body:"Figtree",system-ui,-apple-system,"Segoe UI",sans-serif;
+  color-scheme:dark;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+[hidden]{display:none!important}
+html,body{background:var(--bg)}
+body{color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.45}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:30;background:var(--bg)}
+button{font:inherit;color:inherit}
+.app{max-width:480px;margin:0 auto;padding-block:16px calc(96px + env(safe-area-inset-bottom,0px));padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));display:flex;flex-direction:column;gap:18px}
+.num{font-variant-numeric:tabular-nums}
+.disp{font-family:var(--display);font-weight:700;letter-spacing:.01em}
+.eyebrow{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.09em;color:var(--muted)}
+h1,h2,h3{margin:0;text-wrap:balance}
+.card{background:var(--card);border-radius:18px;padding:16px}
+.row{display:flex;align-items:center;gap:10px}
+.between{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.muted{color:var(--muted)}
+.small{font-size:13px}
+
+/* top */
+.top h1{font-family:var(--display);font-size:34px;font-weight:800;line-height:1;text-transform:uppercase}
+.hero{position:relative;overflow:hidden;background:linear-gradient(150deg,#22305A 0%,#182033 55%,#1A1F33 100%);border-radius:22px;padding:18px}
+.hero .big{font-family:var(--display);font-size:76px;font-weight:800;line-height:.85;color:var(--ink)}
+.hero .big small{font-size:22px;font-weight:600;color:var(--muted);margin-left:6px}
+.hero .route{position:absolute;right:-10px;top:-6px;width:170px;opacity:.35}
+.hero .meta{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:16px}
+.hero .meta div{background:rgba(255,255,255,.06);border-radius:12px;padding:8px 10px}
+.hero .meta b{display:block;font-family:var(--display);font-size:22px;line-height:1.1}
+.hero .meta span{font-size:10px;white-space:nowrap;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;font-weight:700}
+
+/* week dots */
+.dots{display:grid;grid-template-columns:repeat(7,1fr);gap:6px}
+.dot{display:flex;flex-direction:column;align-items:center;gap:6px;font-size:12px;color:var(--muted);background:none;border:0;padding:0;cursor:pointer}
+.dot i{width:34px;height:34px;border-radius:50%;display:grid;place-items:center;border:2px solid var(--line);font-style:normal;font-weight:700;font-size:13px;color:var(--muted)}
+.dot.has i{border-color:var(--muted)}
+.dot.part i{border-color:var(--primary);color:var(--ink)}
+.dot.done i{background:var(--ok);border-color:var(--ok);color:#0F1420}
+.dot.today span{color:var(--ink);font-weight:800}
+.dot.today i{box-shadow:0 0 0 3px var(--bg),0 0 0 5px var(--primary)}
+.dot:focus-visible i{outline:2px solid var(--primary);outline-offset:3px}
+
+/* session card */
+.sess{background:var(--card);border-radius:18px;padding:14px 14px 14px 16px;display:flex;flex-direction:column;gap:10px;position:relative;cursor:pointer;border:1px solid transparent;text-align:left;width:100%}
+.sess:focus-visible{outline:2px solid var(--primary);outline-offset:2px}
+.sess .kind{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:800;text-transform:uppercase;letter-spacing:.08em}
+.sess .kind::before{content:"";width:8px;height:8px;border-radius:50%;background:currentColor}
+.sess h3{font-size:19px;font-weight:800;line-height:1.2}
+.facts{display:flex;gap:14px;font-size:14px;color:var(--muted)}
+.facts b{color:var(--ink);font-weight:700}
+.sess.isdone{opacity:.6}
+.sess.isdone h3{text-decoration:line-through;text-decoration-thickness:2px}
+.chk{position:absolute;right:12px;top:12px;width:40px;height:40px;border-radius:50%;border:2px solid var(--line);background:var(--card2);display:grid;place-items:center;cursor:pointer}
+.chk svg{width:20px;height:20px;stroke:var(--muted)}
+.chk[aria-pressed="true"]{background:var(--ok);border-color:var(--ok)}
+.chk[aria-pressed="true"] svg{stroke:#0F1420}
+.chk:focus-visible{outline:2px solid var(--primary);outline-offset:2px}
+.sess .head{padding-right:48px;display:flex;flex-direction:column;gap:4px}
+
+/* workout viz */
+.viz{display:flex;align-items:flex-end;gap:2px;height:46px}
+.viz span{display:block;border-radius:3px;min-width:2px}
+.viz.sm{height:30px}
+.flat{height:10px;border-radius:5px}
+
+/* plan */
+.weeks{display:flex;gap:8px;overflow-x:auto;padding:4px 2px 8px;scrollbar-width:none;scroll-snap-type:x proximity}
+.weeks::-webkit-scrollbar{display:none}
+.wchip{flex:0 0 auto;width:54px;border-radius:14px;background:var(--card);border:2px solid transparent;padding:8px 0 6px;display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer;scroll-snap-align:center}
+.wchip b{font-family:var(--display);font-size:22px;line-height:1}
+.wchip small{font-size:10px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.05em}
+.wchip .ph{width:22px;height:4px;border-radius:2px;background:var(--zMP)}
+.wchip[data-k="deload"] .ph{background:var(--zR)}
+.wchip[data-k="taper"] .ph,.wchip[data-k="race"] .ph{background:var(--primary)}
+.wchip[aria-current="true"]{border-color:var(--ink);background:var(--card2)}
+.wchip.cur small{color:var(--primary)}
+.wchip.full b{color:var(--ok)}
+.wchip:focus-visible{outline:2px solid var(--primary)}
+.pill{display:inline-block;font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.08em;padding:4px 9px;border-radius:999px;background:var(--card2)}
+.pill.build{color:var(--zMP)}.pill.deload{color:var(--muted)}.pill.taper,.pill.race{color:var(--primary)}
+.dayhead{display:flex;align-items:baseline;gap:8px;margin:6px 2px -4px}
+.dayhead b{font-family:var(--display);font-size:20px;text-transform:uppercase}
+.rest{background:none;border:1px dashed var(--line);border-radius:14px;padding:10px 14px;color:var(--muted);font-size:14px}
+.seg{display:inline-flex;background:var(--card2);border-radius:10px;padding:3px;gap:2px}
+.seg button{border:0;background:none;padding:6px 12px;border-radius:8px;font-weight:700;font-size:13px;color:var(--muted);cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--ink);color:var(--bg)}
+.seg button:focus-visible{outline:2px solid var(--primary)}
+
+/* stats */
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.stat{background:var(--card);border-radius:16px;padding:14px;display:flex;flex-direction:column;gap:2px;min-width:0}
+.stat b{font-family:var(--display);font-size:36px;font-weight:800;line-height:1}
+.stat b small{font-size:16px;color:var(--muted);font-weight:600;margin-left:3px}
+.stat span{font-size:13px;color:var(--muted)}
+.ringwrap{display:flex;align-items:center;gap:16px}
+.ring{width:96px;height:96px;flex:0 0 auto}
+.chart{display:flex;align-items:flex-end;gap:4px;height:120px}
+.chart .c{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;height:100%;justify-content:flex-end}
+.chart .bar{width:100%;border-radius:4px 4px 2px 2px;background:#33416A;position:relative;overflow:hidden}
+.chart .bar i{position:absolute;left:0;right:0;bottom:0;background:var(--ok);border-radius:4px 4px 2px 2px}
+.chart .c.dl .bar{background:#262F48}
+.chart .c.now .bar{outline:2px solid var(--primary);outline-offset:1px}
+.chart .c span{font-size:10px;color:var(--muted);font-variant-numeric:tabular-nums}
+.ms{display:flex;flex-direction:column;gap:2px}
+.ms li{display:grid;grid-template-columns:44px 1fr auto;gap:12px;align-items:center;padding:10px 0;border-top:1px solid var(--line)}
+.ms li:first-child{border-top:0}
+.ms .ic{width:44px;height:44px;border-radius:12px;display:grid;place-items:center;font-family:var(--display);font-weight:800;font-size:18px;background:var(--card2)}
+.ms .cd{font-family:var(--display);font-size:22px;font-weight:700;text-align:right;line-height:1}
+.ms .cd small{display:block;font-family:var(--body);font-size:11px;color:var(--muted);font-weight:600}
+ul{list-style:none;margin:0;padding:0}
+.zones li{display:grid;grid-template-columns:10px 1fr auto;gap:10px;align-items:center;padding:9px 0;border-top:1px solid var(--line)}
+.zones li:first-child{border-top:0}
+.zones i{width:10px;height:28px;border-radius:3px}
+.zones b{font-variant-numeric:tabular-nums;font-weight:800}
+select{font:700 15px var(--body);padding:8px 10px;border-radius:10px;border:0;background:var(--card2);color:var(--ink)}
+
+/* gym */
+.exl li{display:grid;grid-template-columns:1fr auto;gap:2px 12px;padding:12px 0;border-top:1px solid var(--line)}
+.exl li:first-child{border-top:0}
+.exl .n{font-weight:700}
+.exl .rx{font-family:var(--display);font-size:20px;font-weight:700;color:var(--gym);text-align:right;white-space:nowrap}
+.exl .h{grid-column:1/-1;color:var(--muted);font-size:14px}
+.ghead{font-size:12px;font-weight:800;text-transform:uppercase;letter-spacing:.09em;color:var(--gym);margin-bottom:2px}
+
+/* sheet */
+.scrim{position:fixed;inset:0;background:rgba(5,8,14,.6);z-index:40}
+.sheet{position:fixed;left:0;right:0;bottom:0;z-index:41;max-width:480px;margin:0 auto;background:var(--card);border-radius:24px 24px 0 0;padding:10px max(18px,env(safe-area-inset-right,0px)) calc(20px + env(safe-area-inset-bottom,0px)) max(18px,env(safe-area-inset-left,0px));max-height:88vh;overflow:auto;display:flex;flex-direction:column;gap:14px}
+.x{position:absolute;right:14px;top:12px;width:36px;height:36px;border-radius:50%;border:0;background:var(--card2);color:var(--ink);font-size:22px;line-height:1;cursor:pointer}
+.x:focus-visible{outline:2px solid var(--primary)}
+.grab{width:40px;height:5px;border-radius:3px;background:var(--line);margin:0 auto 4px}
+.steps li{display:grid;grid-template-columns:6px 1fr auto;gap:12px;align-items:center;padding:10px 0;border-top:1px solid var(--line)}
+.steps li:first-child{border-top:0}
+.steps i{width:6px;height:34px;border-radius:3px}
+.steps b{font-variant-numeric:tabular-nums}
+.btn{border:0;border-radius:14px;padding:14px;font-weight:800;font-size:16px;background:var(--primary);color:#1A0C06;cursor:pointer;width:100%}
+.btn.ghost{background:var(--card2);color:var(--ink)}
+.btn:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
+
+/* tab bar */
+.tabbar{position:fixed;left:0;right:0;bottom:0;z-index:20;background:rgba(15,20,32,.92);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-top:1px solid var(--line);padding:8px max(8px,env(safe-area-inset-right,0px)) calc(8px + env(safe-area-inset-bottom,0px)) max(8px,env(safe-area-inset-left,0px))}
+.tabbar nav{max-width:480px;margin:0 auto;display:grid;grid-template-columns:repeat(4,1fr)}
+.tabbar button{border:0;background:none;display:flex;flex-direction:column;align-items:center;gap:3px;font-size:11px;font-weight:700;color:var(--muted);padding:4px 0;cursor:pointer}
+.tabbar svg{width:24px;height:24px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.tabbar button[aria-selected="true"]{color:var(--primary)}
+.tabbar button:focus-visible{outline:2px solid var(--primary);border-radius:8px}
+.status{font-size:12px;color:var(--muted);text-align:center}
+@media (prefers-reduced-motion:no-preference){.sheet{animation:up .22s ease-out}@keyframes up{from{transform:translateY(30px);opacity:.4}to{transform:none;opacity:1}}}
+</style>
+</head>
+<body>
+
+<div class="app" id="app"></div>
+<div class="scrim" id="scrim" hidden></div>
+<div class="sheet" id="sheet" role="dialog" aria-modal="true" aria-label="Sessie" hidden></div>
+<div class="tabbar"><nav role="tablist" id="tabs">
+  <button role="tab" data-tab="today" aria-selected="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>Vandaag</button>
+  <button role="tab" data-tab="plan" aria-selected="false"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="17" rx="3"/><path d="M3 9h18M8 2v4M16 2v4"/></svg>Plan</button>
+  <button role="tab" data-tab="gym" aria-selected="false"><svg viewBox="0 0 24 24"><path d="M6 7v10M18 7v10M3 10v4M21 10v4M6 12h12"/></svg>Fitness</button>
+  <button role="tab" data-tab="stats" aria-selected="false"><svg viewBox="0 0 24 24"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg>Stats</button>
+</nav></div>
+
+<script>
+(function(){
+"use strict";
+var START=new Date(2026,10,16), RACE=new Date(2027,2,21);
+var DAYS=["Maandag","Dinsdag","Woensdag","Donderdag","Vrijdag","Zaterdag","Zondag"];
+var DS=["M","D","W","D","V","Z","Z"];
+var MONTHS=["jan","feb","mrt","apr","mei","jun","jul","aug","sep","okt","nov","dec"];
+var goalSec=3*3600+45*60;
+
+// ---------- zones ----------
+var ZN={R:"Dribbel",E:"Rustig",MP:"Marathontempo",T:"Threshold",I:"Interval",TT:"Voluit"};
+var ZC={R:"var(--zR)",E:"var(--zE)",MP:"var(--zMP)",T:"var(--zT)",I:"var(--zI)",TT:"var(--zI)"};
+var ZH={R:.26,E:.42,MP:.64,T:.8,I:1,TT:1};
+function pace(z){ return {R:420,E:380,MP:goalSec/42.195,T:297,I:271,TT:272}[z]; }
+function fmt(s){ s=Math.round(s); var m=Math.floor(s/60),r=s%60; return m+":"+(r<10?"0":"")+r; }
+function fmtH(s){ var h=Math.floor(s/3600),m=Math.floor(s%3600/60),r=s%60; return h+":"+(m<10?"0":"")+m+":"+(r<10?"0":"")+r; }
+function paceTxt(z){ return {R:"",E:"6:00–6:40/km",MP:fmt(pace("MP"))+"/km",T:"4:50–5:05/km",I:"4:25–4:37/km",TT:"< 4:33/km"}[z]; }
+var MYZONES=[["Recovery","> 6:43","R"],["Aerobic endurance","5:29–6:43","E"],["Aerobic power","5:08–5:28","MP"],["Threshold","4:38–5:07","T"],["Anaerobic endurance","4:14–4:37","I"],["Anaerobic power","< 4:14","I"]];
+
+// ---------- workout DSL: "E2 6x[I0.8 R2m] E2" (km, or minutes with m) ----------
+function one(t){ var m=/^(MP|TT|[ERTI])([\d.]+)(m?)$/.exec(t); var s={z:m[1]}; if(m[3]) s.min=+m[2]; else s.km=+m[2]; return s; }
+function parse(str){
+  var toks=str.match(/\d+x\[[^\]]+\]|\S+/g), segs=[], steps=[];
+  toks.forEach(function(t){
+    var r=/^(\d+)x\[(.+)\]$/.exec(t);
+    if(r){ var n=+r[1], items=r[2].split(" ").map(one); steps.push({n:n,items:items});
+      for(var i=0;i<n;i++) items.forEach(function(s,j){ if(i===n-1 && j===items.length-1 && s.z==="R") return; segs.push(s); });
+    } else { var s=one(t); steps.push({n:1,items:[s]}); segs.push(s); }
+  });
+  return {segs:segs,steps:steps};
+}
+function segMin(s){ return s.min!=null? s.min : s.km*pace(s.z)/60; }
+function segKm(s){ return s.km!=null? s.km : s.min*60/pace(s.z); }
+function sumKm(segs){ return segs.reduce(function(a,s){return a+segKm(s);},0); }
+function sumMin(segs){ return segs.reduce(function(a,s){return a+segMin(s);},0); }
+function dist(s){ if(s.min!=null){ var w=Math.floor(s.min), sec=Math.round((s.min-w)*60); return w+"'"+(sec?(sec<10?"0":"")+sec:""); } return s.km<1? Math.round(s.km*1000)+" m" : kmTxt(s.km)+" km"; }
+function kmTxt(k){ return (Math.round(k*10)/10).toString().replace(".",","); }
+
+// ---------- plan ----------
+var W=[
+ {k:"build", q:"E2 6x[I0.8 R2m] E2", e:7, l:"E13 MP3", lt:"licht", b:50},
+ {k:"build", q:"E2 3x[T10m R2m] E2", e:8, l:"E6 MP4 E1 MP4 E3", lt:"zwaarder", b:55},
+ {k:"build", q:"E2 5x[I1 R2m] E2", e:8, l:"E16 MP4", lt:"licht", b:60},
+ {k:"deload",q:"E2 8x[I1m E1m] E2", e:6, l:"E14", lt:"rustig", b:40},
+ {k:"build", q:"E2 2x[T15m R3m] E2", e:8, l:"E6 MP4 E1 MP4 E1 MP4", lt:"zwaarder", b:55},
+ {k:"build", q:"E2 6x[I1 R2m] E2", e:9, l:"E17 MP5", lt:"licht", b:60},
+ {k:"build", q:"E2 3x[T2 R2m] E2", e:9, l:"E8 MP6 E1 MP6 E3", lt:"zwaarder", b:60, ln:"Oefen je gel-strategie."},
+ {k:"deload",q:"E2 6x[I0.8 R2m] E2", e:7, l:"E13 MP3", lt:"licht", b:40},
+ {k:"build", q:"E2 5x[I1.2 R2.5m] E2", e:9, l:"E20 MP5", lt:"licht", b:60},
+ {k:"build", q:"E3 T25m E3", e:10, l:"E8 MP5 E1 MP5 E1 MP5 E2", lt:"zwaarder", b:60, ln:"Gels zoals op racedag."},
+ {k:"build", q:"E2 4x[T2 R2m] E2", e:10, l:"E22 MP6", lt:"licht", b:60},
+ {k:"deload",q:"E6 6x[I0.1 R1m]", e:7, l:"E16", lt:"rustig", b:0, tt:"E2 4x[I0.1 R1m] TT5 E2", ln:"Herstelloop na de time trial, geen tempo."},
+ {k:"build", q:"E2 3x[T3 R2.5m] E2", e:10, l:"E25 MP5", lt:"licht", b:60},
+ {k:"build", q:"E2 6x[I1 R1.5m] E3", e:10, l:"E10 MP8 E1 MP8 E3", lt:"zwaarder", b:60, ln:"Generale repetitie: ontbijt, schoenen, gels."},
+ {k:"build", q:"E3 T30m E3", e:10, l:"E23 MP7 E2", lt:"licht", b:60, ln:"Je langste duurloop."},
+ {k:"taper", q:"E2 3x[MP3 R1m] 4x[I0.2 R1m] E2", e:8, l:"E8 MP12 E4", lt:"zwaarder", b:45},
+ {k:"taper", q:"E2 3x[MP2 R2m] E2", e:6, l:"E5 MP3 E2 MP3 E3", lt:"licht", b:35},
+ {k:"race",  q:"E2 3x[MP1 R2m] 4x[I0.1 R1m] E1", e:5, l:"MP42.195", lt:"race", b:0}
+];
+function phaseOf(w){ return w<4?1:w<8?2:w<12?3:4; }
+var PH={1:"Basis",2:"Kracht",3:"Kracht & power",4:"Piek & taper"};
+var KL={build:"Opbouw",deload:"Deload",taper:"Taper",race:"Raceweek"};
+
+var GYM = {
+ A:{name:"Workout A · Kracht", when:"Na de interval, liefst 3 u+ ertussen of direct erna. ±75 min.",
+  groups:[
+   ["Opwarming",[
+     ["Fietsen of roeien + mobiliteit","Heup- en enkelmobiliteit, glute bridge 2×10, monster walk 2×10",["10'","10'","10'","10'"]]]],
+   ["Hoofdoefeningen",[
+     ["Back squat","Squat rack in de free weight zone, of de smith machine als de racks bezet zijn. 2 reps in reserve",["3×8","4×6","4×4","3×4"]],
+     ["Bench press","Schouderbladen samen, voeten plat. Laatste set mag zwaar",["3×8","4×6","5×4","3×5"]],
+     ["Hamstring curl (zittend of liggend)","Machine in de strength zone. 3 s gecontroleerd terug",["3×10","3×8","3×8","2×8"]],
+     ["Pull-ups of lat pulldown","Volledige range",["3×8","4×6","4×5","3×6"]]]],
+   ["Loopspecifiek",[
+     ["Single-leg kuitheffen, staand","Gestrekte knie, met dumbbell. Traag naar beneden (3 s)",["3×10/been","4×8/been","4×6/been","3×8/been"]],
+     ["Soleus raise, zittend","Gebogen knie, zwaar gewicht op de knieën",["3×15","3×12","3×12","2×12"]]]],
+   ["Core",[
+     ["Dead bug","Onderrug blijft tegen de grond",["3×8/kant","3×10/kant","3×10/kant","2×10/kant"]],
+     ["Copenhagen plank","Adductoren; kniesteun als het te zwaar is",["3×15 s/kant","3×20 s/kant","3×25 s/kant","2×20 s/kant"]],
+     ["Side plank","",["3×30 s/kant","3×40 s/kant","3×45 s/kant","2×40 s/kant"]]]]
+  ]},
+ B:{name:"Workout B · Plyo & unilateraal", when:"Na de easy run of fietsrit. Plyo altijd eerst, als je nog fris bent. ±75–90 min.",
+  groups:[
+   ["Opwarming",[
+     ["Dynamische opwarming","Leg swings, A-skips, B-skips, high knees, 2× 20 m versnelling",["10'","10'","10'","10'"]]]],
+   ["Plyometrie",[
+     ["Pogo hops","Kort grondcontact, stijve enkels",["3×15","3×20","3×20","2×15"]],
+     ["Box jumps","Plyo box in de functional zone, anders een stevige bank of step. Stap af, spring niet af",["3×5","4×5","4×4","3×4"]],
+     ["Laterale hops / skater jumps","Stabiele landing, 1 s vasthouden",["2×8/kant","3×8/kant","3×6/kant","2×6/kant"]],
+     ["Bounding of single-leg hops","Fase 1: overslaan. Explosief, volle rust",["—","3×20 m","4×20 m + 3×6 SL hops/been","2×20 m"]]]],
+   ["Kracht",[
+     ["Bench press (volume / snelheid)","Lichter dan dinsdag (~65–75%); fase 3 explosief omhoog",["3×10","3×8","3×6 explosief","3×6"]],
+     ["Bulgarian split squat","Dumbbells, voorste knie over de tenen mag",["3×8/been","3×8/been","4×6/been","3×6/been"]],
+     ["Hip thrust","Barbell met pad, rug tegen een bank; of de hip thrust/glute-machine. 1 s vasthouden bovenaan",["3×10","4×8","4×6","3×8"]],
+     ["Nordic hamstring curl","Hielen onder het kussen van de lat pulldown, op een mat. Lukt dat niet: liggende hamstring curl, 3 s naar beneden",["2×4","3×5","3×6","2×5"]],
+     ["Step-ups","Op een bank, knie boven de enkel, duw af via de hiel",["3×8/been","3×8/been","3×6/been","2×8/been"]]]],
+   ["Voet, enkel & core",[
+     ["Tibialis raises","Rug tegen de muur, tenen omhoog",["2×15","2×20","2×20","2×15"]],
+     ["Pallof press","Anti-rotatie",["3×10/kant","3×10/kant","3×12/kant","2×10/kant"]],
+     ["Bird dog","Traag, bekken stil",["2×8/kant","2×10/kant","2×10/kant","2×8/kant"]]]]
+  ]}
+};
+
+function qKind(segs){ var z=segs.map(function(s){return s.z;}); return z.indexOf("T")>=0?"T":z.indexOf("MP")>=0&&z.indexOf("I")<0?"MP":z.indexOf("MP")>=0?"MP":"I"; }
+function sessionsFor(w){
+  var d=W[w], race=d.k==="race", days=[[],[],[],[],[],[],[]], q=parse(d.q);
+  if(d.tt) days[1].push({id:"di_run",type:"E",tag:"Easy + strides",title:"Rustig met strides",p:q,note:"Geen interval deze week: frisse benen voor zaterdag."});
+  else { var k=qKind(q.segs); days[1].push({id:"di_run",type:k,tag:{T:"Tempo",I:"Interval",MP:"Marathontempo"}[k],title:race?"Laatste prikkel":titleOf(q),p:q,note:race?"Kort en scherp. Niets forceren.":""}); }
+  if(w<=16) days[1].push({id:"di_gym",type:"gym",tag:"Fitness",title:w===16?"Workout A · licht":"Workout A · Kracht",gym:"A",note:w===16?"Laatste gymsessie: 2 sets per oefening, licht.":(d.k!=="build"?"Deloadversie: 1 set minder, RPE 6.":"Na de loopsessie.")});
+  days[3].push({id:"do_easy",type:"E",tag:race?"Shake-out":"Easy",title:race?"Shake-out":"Easy run",p:parse("E"+d.e),easy:!race,note:race?"Heel rustig, met 4 strides op het einde.":""});
+  if(w<=15) days[3].push({id:"do_gym",type:"gym",tag:"Fitness",title:"Workout B · Plyo",gym:"B",note:d.tt?"Lichte versie: geen plyo, 2 sets per oefening. Zaterdag is de time trial.":(d.k!=="build"?"Deloadversie: 1 set minder, plyo halveren.":"Plyo eerst, dan kracht.")});
+  if(d.tt) days[5].push({id:"za_tt",type:"TT",tag:"Time trial",title:"5 km PR-poging",p:parse(d.tt),note:"Doel: onder 22:46. Eerste km op 4:35, niet sneller; vanaf km 3 versnellen, laatste km alles. Vlak parcours of de piste."});
+  else if(race) days[5].push({id:"za_bike",type:"bike",tag:"Fiets",title:"Optioneel losfietsen",bmin:25,note:"20–30 min heel rustig, of gewoon rust. Rugnummer ophalen en koolhydraten stapelen."});
+  else days[5].push({id:"za_bike",type:"bike",tag:"Fietstocht",title:d.b+" km fietsen",bkm:d.b,note:"Duurtempo, rustig genoeg om zondag fris te zijn."});
+  var lp=parse(d.l);
+  days[6].push(race?{id:"zo_long",type:"race",tag:"Race",title:"Sofico Gent Marathon",p:lp,note:"Eerste 5 km bewust 5–10 s/km trager dan marathontempo. Gels om de ±40 minuten."}:
+    {id:"zo_long",type:"long",tag:"Long run · "+d.lt,title:Math.round(sumKm(lp.segs))+" km long run",p:lp,note:d.ln||""});
+  return days;
+}
+function titleOf(q){ var r=q.steps.filter(function(s){return s.n>1;})[0]; if(!r){ var c=q.steps.filter(function(s){return s.items[0].z!=="E";})[0]; return c?dist(c.items[0])+" "+ZN[c.items[0].z].toLowerCase():"Kwaliteit"; } return r.n+" × "+dist(r.items[0]); }
+function isRun(s){ return s.p && !(s.easy && weekState(curSelW).easy==="bike"); }
+function runKmOf(w,s,ws){ if(!s.p) return 0; if(s.easy && ws.easy==="bike") return 0; return sumKm(s.p.segs); }
+
+// ---------- state ----------
+var state={weeks:{}}, db=null, store="local", chain={};
+function key(w){ return "w"+(w<9?"0":"")+(w+1); }
+function weekState(w){ var s=state.weeks[key(w)]||{}; return {done:s.done||{},easy:s.easy||"run"}; }
+function lsGet(){ try{ var r=localStorage.getItem("gentplan"); return r?JSON.parse(r):null; }catch(e){ return null; } }
+function lsSet(){ try{ localStorage.setItem("gentplan",JSON.stringify({weeks:state.weeks,goal:goalSec})); }catch(e){} }
+function saveWeek(w,o){ state.weeks[key(w)]=o; lsSet(); render(); if(store==="db"){ var k=key(w); chain[k]=(chain[k]||Promise.resolve()).then(function(){ return db.doc("weeks/"+k).set(o); }).catch(function(){ setStatus("Opslaan online mislukt; staat wel op dit toestel."); }); } }
+function saveGoal(g){ goalSec=g; lsSet(); render(); if(store==="db"){ chain.s=(chain.s||Promise.resolve()).then(function(){ return db.doc("settings/main").set({goal:g}); }).catch(function(){}); } }
+function toggle(w,id){ var ws=weekState(w), o={done:Object.assign({},ws.done),easy:ws.easy}; if(o.done[id]) delete o.done[id]; else o.done[id]=true; saveWeek(w,o); }
+function setEasy(w,m){ var ws=weekState(w); saveWeek(w,{done:Object.assign({},ws.done),easy:m}); }
+var statusTxt=""; function setStatus(t){ statusTxt=t; var e=document.getElementById("status"); if(e) e.textContent=t; }
+
+// ---------- dates ----------
+var today=new Date(); today.setHours(0,0,0,0);
+var dayIdx=Math.round((today-START)/864e5);
+var curW=Math.max(0,Math.min(17,Math.floor(dayIdx/7)));
+var curD=dayIdx<0?-1:dayIdx>125?7:dayIdx-curW*7;
+var curSelW=curW, tab="today", gymSel="A", sheetRef=null;
+try{ var tb=localStorage.getItem("gent_tab"); if(tb) tab=tb; }catch(e){}
+function dateOf(w,d){ var x=new Date(START); x.setDate(x.getDate()+w*7+d); return x; }
+function dstr(x){ return x.getDate()+" "+MONTHS[x.getMonth()]; }
+function daysUntil(x){ return Math.round((x-today)/864e5); }
+
+// ---------- components ----------
+var CHECK='<svg viewBox="0 0 24 24" fill="none" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>';
+function color(s){ return s.type==="gym"?"var(--gym)":s.type==="bike"?"var(--bike)":s.type==="long"?"var(--zMP)":s.type==="race"?"var(--primary)":ZC[s.type]; }
+function viz(segs,cls){ return '<div class="viz '+(cls||"")+'" aria-hidden="true">'+segs.map(function(s){ return '<span style="flex:'+segMin(s).toFixed(2)+' 1 0;height:'+Math.round(ZH[s.z]*100)+'%;background:'+ZC[s.z]+'"></span>'; }).join("")+'</div>'; }
+function effSess(w,s){ var ws=weekState(w); if(s.easy && ws.easy==="bike"){ var m=Math.round(segMin(s.p.segs[0])/5)*5; return Object.assign({},s,{type:"bike",tag:"Easy · fiets",title:"Rustige fietsrit",p:null,bmin:m+15,note:(m+10)+"–"+(m+25)+" min op praattempo."}); } return s; }
+function facts(s){
+  if(s.p){ var km=sumKm(s.p.segs), mn=sumMin(s.p.segs); return '<div class="facts"><span><b class="num">'+kmTxt(km)+'</b> km</span><span><b class="num">'+Math.round(mn)+'</b> min</span>'+'</div>'; }
+  if(s.bkm) return '<div class="facts"><span><b class="num">'+s.bkm+'</b> km</span><span><b class="num">±'+Math.round(s.bkm/25*60/5)*5+'</b> min</span></div>';
+  if(s.bmin) return '<div class="facts"><span><b class="num">'+s.bmin+'</b> min</span></div>';
+  if(s.gym) return '<div class="facts"><span><b>±75</b> min</span><span>'+PH[phaseOf(curSelW)]+'</span></div>';
+  return "";
+}
+function card(w,s0,big){
+  var s=effSess(w,s0), done=!!weekState(w).done[s0.id], c=color(s);
+  var v = s.p? viz(s.p.segs,big?"":"sm") : '<div class="flat" style="background:'+c+';opacity:.75"></div>';
+  return '<div class="sess'+(done?" isdone":"")+'" role="button" tabindex="0" data-open="'+w+'|'+s0.id+'">'+
+    '<div class="head"><span class="kind" style="color:'+c+'">'+s.tag+'</span><h3>'+s.title+'</h3>'+facts(s)+'</div>'+v+
+    '<button class="chk" type="button" aria-pressed="'+done+'" aria-label="'+s.title+' gedaan" data-chk="'+w+'|'+s0.id+'">'+CHECK+'</button></div>';
+}
+function findSess(w,id){ var r=null; sessionsFor(w).forEach(function(d,di){ d.forEach(function(s){ if(s.id===id) r={s:s,d:di}; }); }); return r; }
+
+// ---------- metrics ----------
+function metrics(){
+  var m={doneRun:0,doneBike:0,done:0,total:0,dueTotal:0,dueDone:0,longest:0,gym:0,planned:[],donew:[],streak:0};
+  for(var w=0;w<18;w++){
+    var ws=weekState(w), pw=0, dw=0, all=true;
+    sessionsFor(w).forEach(function(day,di){ day.forEach(function(s){
+      var km=runKmOf(w,s,ws); pw+=km; m.total++;
+      var due = w*7+di<=dayIdx;
+      if(due) m.dueTotal++;
+      if(ws.done[s.id]){ m.done++; if(due) m.dueDone++; dw+=km; m.doneRun+=km; if(s.bkm) m.doneBike+=s.bkm; if(s.easy&&ws.easy==="bike") m.doneBike+=20; if(s.gym) m.gym++; if(s.p&&km>m.longest) m.longest=km; }
+      else all=false;
+    }); });
+    m.planned.push(pw); m.donew.push(dw); m.weekFull=m.weekFull||[]; m.weekFull.push(all);
+  }
+  for(var i=curW-1;i>=0;i--){ if(m.weekFull[i]) m.streak++; else break; }
+  if(m.weekFull[curW]) m.streak++;
+  return m;
+}
+
+// ---------- screens ----------
+function heroHTML(m){
+  var dr=daysUntil(RACE), ds=daysUntil(START);
+  var route='<svg class="route" viewBox="0 0 170 120" fill="none"><path d="M10 100 C40 20, 70 120, 100 50 S150 30, 160 10" stroke="#FF6B4A" stroke-width="4" stroke-linecap="round" stroke-dasharray="2 9"/><circle cx="160" cy="10" r="7" fill="#FF6B4A"/></svg>';
+  var wk = dayIdx<0 ? "—" : (curW+1);
+  return '<section class="hero">'+route+
+    '<div class="eyebrow">Sofico Gent Marathon · zo 21 mrt</div>'+
+    '<div class="big num" style="margin-top:10px">'+(dr>0?dr:"🏁")+'<small>dagen</small></div>'+
+    '<div class="muted small" style="margin-top:6px">'+(ds>0?'Je plan start maandag '+dstr(START)+' (over '+ds+' dagen)':'Doel '+fmtH(goalSec)+' · '+fmt(pace("MP"))+'/km')+'</div>'+
+    '<div class="meta"><div><b class="num">'+wk+'<span style="font-size:14px;color:var(--muted)">/18</span></b><span>Week</span></div><div><b class="num">'+Math.round(m.doneRun)+'</b><span>km gelopen</span></div><div><b class="num">'+Math.round(m.done/m.total*100)+'%</b><span>Plan klaar</span></div></div>'+
+  '</section>';
+}
+function dotsHTML(w){
+  var ws=weekState(w);
+  return '<div class="dots">'+sessionsFor(w).map(function(day,di){
+    var n=day.length, d=day.filter(function(s){return ws.done[s.id];}).length;
+    var cls="dot"+(n?" has":"")+(n&&d===n?" done":d?" part":"")+(w===curW&&di===curD?" today":"");
+    return '<button class="'+cls+'" data-day="'+w+'|'+di+'" aria-label="'+DAYS[di]+': '+(n?d+" van "+n+" gedaan":"rust")+'"><span>'+DS[di]+'</span><i>'+(n&&d===n?"✓":dateOf(w,di).getDate())+'</i></button>';
+  }).join("")+'</div>';
+}
+function screenToday(){
+  var m=metrics(), out=heroHTML(m);
+  var w=curW, days=sessionsFor(w);
+  if(dayIdx<0){
+    out+='<div class="between"><h2 class="disp" style="font-size:26px">EERSTE WEEK</h2><span class="pill build">Opbouw</span></div>'+dotsHTML(0);
+    out+='<div class="eyebrow">Je eerste sessie · di '+dstr(dateOf(0,1))+'</div>'+card(0,days[1][0],true);
+    out+='<div class="card small muted">Tip voor deze week: zoek je squat-rack en bench op bij Basic-Fit en test je gewichten op workout A, zodat je startgewichten klaarliggen.</div>';
+  } else if(dayIdx>125){
+    out+='<div class="card"><h2 class="disp" style="font-size:28px">GEFINISHT</h2><p class="muted">18 weken, '+Math.round(m.doneRun)+' km. Proficiat!</p></div>';
+  } else {
+    var ws=weekState(w), tdy=days[curD], wd=0, wt=0; days.forEach(function(d){ d.forEach(function(s){ wt++; if(ws.done[s.id]) wd++; }); });
+    out+='<div class="between"><div><div class="eyebrow">Week '+(w+1)+' · '+KL[W[w].k]+'</div><h2 class="disp" style="font-size:26px">'+DAYS[curD].toUpperCase()+' '+dstr(today).toUpperCase()+'</h2></div><span class="pill">'+wd+'/'+wt+' deze week</span></div>'+dotsHTML(w);
+    if(tdy.length){ out+=tdy.map(function(s){ return card(w,s,true); }).join(""); }
+    else {
+      var nxt=null; for(var di=curD+1;di<7&&!nxt;di++) if(days[di].length) nxt={d:di,s:days[di][0]};
+      out+='<div class="card"><div class="eyebrow" style="color:var(--ok)">Rustdag</div><h3 style="font-size:20px;margin-top:4px">Herstel is ook training.</h3><p class="muted small" style="margin:6px 0 0">Wat wandelen, mobiliteit en goed slapen.</p></div>';
+      if(nxt) out+='<div class="eyebrow">Volgende · '+DAYS[nxt.d].toLowerCase()+'</div>'+card(w,nxt.s,false);
+    }
+    var mis=[]; for(var d2=0;d2<curD;d2++) days[d2].forEach(function(s){ if(!ws.done[s.id]) mis.push(s); });
+    if(mis.length) out+='<div class="eyebrow">Nog open deze week</div>'+mis.map(function(s){return card(w,s,false);}).join("");
+  }
+  return out;
+}
+function screenPlan(){
+  var w=curSelW, d=W[w], ws=weekState(w), days=sessionsFor(w), m=metrics();
+  var chips='<div class="weeks" id="weeks">'+W.map(function(x,i){ return '<button class="wchip'+(i===curW&&dayIdx>=0?" cur":"")+(m.weekFull[i]?" full":"")+'" data-k="'+x.k+'" data-week="'+i+'" aria-current="'+(i===w)+'"><small>'+(i===curW&&dayIdx>=0?"nu":dstr(dateOf(i,0)))+'</small><b>'+(m.weekFull[i]?"✓":i+1)+'</b><span class="ph"></span></button>'; }).join("")+'</div>';
+  var runKm=m.planned[w];
+  var out='<div class="top"><div class="eyebrow">Plan · 18 weken</div><h1>Week '+(w+1)+'</h1></div>'+chips+
+    '<div class="row" style="flex-wrap:wrap;gap:8px"><span class="pill '+d.k+'">'+KL[d.k]+'</span><span class="pill">Fase '+phaseOf(w)+' · '+PH[phaseOf(w)]+'</span><span class="pill">'+dstr(dateOf(w,0))+' – '+dstr(dateOf(w,6))+'</span></div>'+
+    '<div class="grid2"><div class="stat"><b class="num">'+kmTxt(runKm)+'<small>km</small></b><span>lopen gepland</span></div><div class="stat"><b class="num">'+kmTxt(m.donew[w])+'<small>km</small></b><span>al gelopen</span></div></div>';
+  days.forEach(function(day,di){
+    out+='<div class="dayhead"><b>'+DAYS[di]+'</b><span class="muted small">'+dstr(dateOf(w,di))+'</span></div>';
+    if(!day.length) out+='<div class="rest">Rustdag</div>';
+    day.forEach(function(s){
+      out+=card(w,s,false);
+      if(s.easy) out+='<div class="seg" role="group" aria-label="Easy sessie"><button data-easy="'+w+'|run" aria-pressed="'+(ws.easy!=="bike")+'">Lopen</button><button data-easy="'+w+'|bike" aria-pressed="'+(ws.easy==="bike")+'">Fietsen</button></div>';
+    });
+  });
+  var notes={build:"Interval en long run zijn de sleutelsessies; de easy dag mag echt rustig.",deload:"Deload: minder volume, geen zware sets. Je lichaam verwerkt nu de vorige drie weken.",taper:"Taper: volume omlaag, tempo blijft. Slaap en koolhydraten zijn nu je beste training.",race:"Raceweek. Niets nieuws: schoenen, ontbijt en gels zoals op je lange duurlopen."};
+  out+='<div class="card small muted">'+notes[d.k]+'</div>';
+  return out;
+}
+function screenGym(){
+  var w=curSelW, ph=phaseOf(w), d=W[w], G=GYM[gymSel];
+  var info=G.when; if(d.k==="deload") info+=" Deloadweek: 1 set minder, RPE 6, plyo halveren."; if(w===15) info+=" Taper: 1 set minder, niets tot falen."; if(w===16) info=gymSel==="A"?"Week 17: enkel dinsdag, 2 sets, licht. Geen plyo.":"Week 17: geen workout B meer."; if(w===17) info="Raceweek: geen fitness, enkel mobiliteit.";
+  var out='<div class="top"><div class="eyebrow">Basic-Fit Gent Normaalschoolstraat · 24/7</div><h1>Fitness</h1></div>'+
+    '<div class="between"><div class="seg"><button data-gym="A" aria-pressed="'+(gymSel==="A")+'">Workout A</button><button data-gym="B" aria-pressed="'+(gymSel==="B")+'">Workout B</button></div><span class="pill" style="color:var(--gym)">Week '+(w+1)+' · '+PH[ph]+'</span></div>'+
+    '<div class="card"><div class="eyebrow" style="color:var(--gym)">'+(gymSel==="A"?"Dinsdag":"Donderdag")+'</div><h2 style="font-size:22px;margin:4px 0 6px">'+G.name+'</h2><p class="muted small" style="margin:0">'+info+'</p></div>';
+  G.groups.forEach(function(g){
+    out+='<div class="card"><div class="ghead">'+g[0]+'</div><ul class="exl">'+g[1].map(function(x){ return '<li><span class="n">'+x[0]+'</span><span class="rx">'+x[2][ph-1]+'</span>'+(x[1]?'<span class="h">'+x[1]+'</span>':'')+'</li>'; }).join("")+'</ul></div>';
+  });
+  out+='<div class="card small muted">Kies een gewicht waarbij je nog 2 herhalingen over hebt. Ging de laatste set vlot? Volgende week 2,5–5 kg erbij. Plyo: volle rust, kwaliteit boven aantal.</div>';
+  return out;
+}
+function ring(p,col){ var r=40,c=2*Math.PI*r; return '<svg class="ring" viewBox="0 0 96 96"><circle cx="48" cy="48" r="'+r+'" stroke="#2A3552" stroke-width="10" fill="none"/><circle cx="48" cy="48" r="'+r+'" stroke="'+col+'" stroke-width="10" fill="none" stroke-linecap="'+(p>0?"round":"butt")+'" stroke-dasharray="'+(c*p).toFixed(1)+' '+c.toFixed(1)+'" transform="rotate(-90 48 48)"/><text x="48" y="55" text-anchor="middle" fill="#F3F5FA" font-family="Barlow Condensed,sans-serif" font-weight="800" font-size="24">'+Math.round(p*100)+'%</text></svg>'; }
+function screenStats(){
+  var m=metrics(), cons=m.dueTotal?m.dueDone/m.dueTotal:0, maxP=Math.max.apply(null,m.planned), tr=m.planned.slice(0,17), pk=Math.max.apply(null,tr), pkW=tr.indexOf(pk)+1;
+  var out='<div class="top"><div class="eyebrow">Je voortgang</div><h1>Stats</h1></div>';
+  out+='<div class="card ringwrap">'+ring(m.dueTotal?cons:0,"#3FC98A")+'<div><div class="eyebrow">Consistentie</div><div style="font-weight:800;font-size:18px;margin:2px 0">'+m.dueDone+' van '+m.dueTotal+' sessies</div><div class="muted small">'+(m.dueTotal?"die tot vandaag gepland stonden.":"Start maandag "+dstr(START)+". Elke sessie die je afvinkt telt hier mee.")+'</div></div></div>';
+  out+='<div class="grid2">'+
+    '<div class="stat"><b class="num">'+Math.round(m.doneRun)+'<small>km</small></b><span>gelopen</span></div>'+
+    '<div class="stat"><b class="num">'+Math.round(m.doneBike)+'<small>km</small></b><span>gefietst</span></div>'+
+    '<div class="stat"><b class="num">'+kmTxt(m.longest)+'<small>km</small></b><span>langste loop</span></div>'+
+    '<div class="stat"><b class="num">'+m.gym+'<small>/32</small></b><span>fitnesssessies</span></div>'+
+    '<div class="stat"><b class="num">'+m.streak+'</b><span>volledige weken op rij</span></div>'+
+    '<div class="stat"><b class="num">'+m.done+'<small>/'+m.total+'</small></b><span>sessies in totaal</span></div></div>';
+  out+='<div class="card"><div class="between"><div class="eyebrow">Loopvolume per week</div><span class="small muted"><span style="color:var(--ok)">■</span> gelopen</span></div><div class="chart" style="margin-top:12px">'+
+    m.planned.map(function(p,i){ var hp=p/maxP*100, hd=p?Math.min(1,m.donew[i]/p)*100:0; return '<div class="c'+(W[i].k!=="build"?" dl":"")+(i===curW&&dayIdx>=0?" now":"")+'" title="Week '+(i+1)+': '+kmTxt(m.donew[i])+' van '+kmTxt(p)+' km"><div class="bar" style="height:'+hp.toFixed(1)+'%"><i style="height:'+hd.toFixed(1)+'%"></i></div><span>'+(i+1)+'</span></div>'; }).join("")+
+    '</div><div class="small muted" style="margin-top:8px">Piek in training: '+kmTxt(pk)+' km in week '+pkW+'. Donkere balken zijn deload- en taperweken.</div></div>';
+  var ms=[["5K","var(--zI)","5 km PR-poging","onder 22:46",dateOf(11,5)],["32","var(--zMP)","Langste duurloop","32 km",dateOf(14,6)],["42","var(--primary)","Sofico Gent Marathon","doel "+fmtH(goalSec),RACE]];
+  out+='<div class="card"><div class="eyebrow" style="margin-bottom:4px">Mijlpalen</div><ul class="ms">'+ms.map(function(x){ var n=daysUntil(x[4]); return '<li><span class="ic" style="color:'+x[1]+'">'+x[0]+'</span><div><div style="font-weight:800">'+x[2]+'</div><div class="small muted">'+dstr(x[4])+' · '+x[3]+'</div></div><div class="cd num">'+(n>=0?n:"✓")+'<small>'+(n>=0?"dagen":"gedaan")+'</small></div></li>'; }).join("")+'</ul></div>';
+  out+='<div class="card"><div class="between"><div><div class="eyebrow">Doeltijd</div><div class="disp" style="font-size:30px;line-height:1.1">'+fmt(pace("MP"))+'<span class="muted" style="font-size:16px">/km marathontempo</span></div></div><select id="goalSel" aria-label="Doeltijd">';
+  for(var mm=210;mm<=270;mm++) out+='<option value="'+mm*60+'"'+(mm*60===goalSec?" selected":"")+'>'+fmtH(mm*60)+'</option>';
+  out+='</select></div><div class="eyebrow" style="margin:14px 0 2px">Jouw zones</div><ul class="zones">'+MYZONES.map(function(z){ return '<li><i style="background:'+ZC[z[2]]+'"></i><span>'+z[0]+'</span><b>'+z[1]+'</b></li>'; }).join("")+'</ul></div>';
+  out+='<div class="status" id="status">'+statusTxt+'</div>';
+  return out;
+}
+
+// ---------- sheet ----------
+function openSheet(w,id){
+  var f=findSess(w,id); if(!f) return; sheetRef={w:w,id:id};
+  var s=effSess(w,f.s), done=!!weekState(w).done[id], c=color(s), h='<div class="grab"></div><button class="x" type="button" data-close="1" aria-label="Sluiten">×</button>';
+  h+='<div style="padding-right:48px;display:flex;flex-direction:column;gap:4px"><span class="eyebrow" style="color:'+c+'">'+s.tag+'</span><h2 style="font-size:26px">'+s.title+'</h2><span class="small muted">'+DAYS[f.d]+' '+dstr(dateOf(w,f.d))+' · week '+(w+1)+'</span></div>'+facts(s);
+  if(s.p){
+    h+=viz(s.p.segs);
+    h+='<ul class="steps">'+s.p.steps.map(function(st){
+      var it=st.items, main=it[0];
+      var txt=(st.n>1?st.n+" × ":"")+it.map(function(x){ return dist(x)+" "+ZN[x.z].toLowerCase(); }).join(" + ");
+      return '<li><i style="background:'+ZC[main.z]+'"></i><span>'+txt+'</span><b>'+paceTxt(main.z)+'</b></li>';
+    }).join("")+'</ul>';
+  }
+  if(s.note) h+='<div class="card" style="background:var(--card2)"><span class="small">'+s.note+'</span></div>';
+  if(s.gym) h+='<button class="btn ghost" data-gotogym="'+s.gym+'">Bekijk oefeningen</button>';
+  h+='<button class="btn" data-chk="'+w+'|'+id+'">'+(done?"Markeer als niet gedaan":"Markeer als gedaan")+'</button>';
+  var sh=document.getElementById("sheet"); sh.innerHTML=h; sh.hidden=false; document.getElementById("scrim").hidden=false;
+  var b=sh.querySelector(".btn:last-child"); if(b) b.focus();
+}
+function closeSheet(){ sheetRef=null; document.getElementById("sheet").hidden=true; document.getElementById("scrim").hidden=true; }
+
+// ---------- render + events ----------
+function render(){
+  var app=document.getElementById("app");
+  app.innerHTML = tab==="today"?screenToday():tab==="plan"?screenPlan():tab==="gym"?screenGym():screenStats();
+  Array.prototype.forEach.call(document.querySelectorAll("#tabs button"),function(b){ b.setAttribute("aria-selected",String(b.dataset.tab===tab)); });
+  if(tab==="plan"){ var c=document.querySelector('.wchip[aria-current="true"]'); if(c) c.scrollIntoView({inline:"center",block:"nearest"}); }
+  var gs=document.getElementById("goalSel"); if(gs) gs.onchange=function(){ saveGoal(+gs.value); };
+  if(sheetRef) openSheet(sheetRef.w,sheetRef.id);
+  try{ localStorage.setItem("gent_tab",tab); }catch(e){}
+}
+document.addEventListener("click",function(e){
+  var t=e.target.closest("[data-chk],[data-open],[data-tab],[data-week],[data-easy],[data-gym],[data-gotogym],[data-day],[data-close],#scrim");
+  if(!t) return;
+  if(t.id==="scrim"||t.dataset.close){ closeSheet(); return; }
+  if(t.dataset.chk){ e.stopPropagation(); var p=t.dataset.chk.split("|"); toggle(+p[0],p[1]); return; }
+  if(t.dataset.open){ var q=t.dataset.open.split("|"); openSheet(+q[0],q[1]); return; }
+  if(t.dataset.tab){ tab=t.dataset.tab; closeSheet(); render(); window.scrollTo(0,0); return; }
+  if(t.dataset.week){ curSelW=+t.dataset.week; render(); return; }
+  if(t.dataset.easy){ var r=t.dataset.easy.split("|"); setEasy(+r[0],r[1]); return; }
+  if(t.dataset.gym){ gymSel=t.dataset.gym; render(); return; }
+  if(t.dataset.gotogym){ gymSel=t.dataset.gotogym; tab="gym"; closeSheet(); render(); window.scrollTo(0,0); return; }
+  if(t.dataset.day){ var dd=t.dataset.day.split("|"); curSelW=+dd[0]; tab="plan"; render(); window.scrollTo(0,0); }
+});
+document.addEventListener("keydown",function(e){
+  if(e.key==="Escape") closeSheet();
+  if((e.key==="Enter"||e.key===" ") && e.target.dataset && e.target.dataset.open){ e.preventDefault(); var q=e.target.dataset.open.split("|"); openSheet(+q[0],q[1]); }
+});
+
+var local=lsGet(); if(local){ state.weeks=local.weeks||{}; if(local.goal) goalSec=local.goal; }
+statusTxt="Opgeslagen op dit toestel";
+render();
+if("serviceWorker" in navigator){ window.addEventListener("load",function(){ navigator.serviceWorker.register("sw.js").catch(function(){}); }); }
+})();
+</script>
+
+</body>
+</html>
